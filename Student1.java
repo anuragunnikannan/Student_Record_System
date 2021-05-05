@@ -524,7 +524,7 @@ public class Student1
         }
     }
 
-    //Display students with highest CGPA
+    //Display highest CGPA in respective course and year
     public void userMenu8()throws Exception
     {
         System.out.print("\033[H\033[2J");  
