@@ -556,7 +556,7 @@ public class Student1
             System.out.println("5. Search students studying in a specific year");
             System.out.println("6. Search students studying a specific course");
             System.out.println("7. Search students having CGPA higher than given");
-            System.out.println("8. Display students with highest CGPA in their respective course and year");
+            System.out.println("8. Display highest CGPA in respective course and year");
             System.out.println("9. Exit");
             System.out.println("\nEnter your choice: ");
             choice = Integer.parseInt(br.readLine());
