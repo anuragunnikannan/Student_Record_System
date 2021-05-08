@@ -29,6 +29,27 @@ public class Student1
 
     static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
+    //Function for clearing the screen
+    public static void clrscr()
+    {
+        //Clears Screen in java
+        try
+        {
+            if (System.getProperty("os.name").contains("Windows"))
+            {
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            }
+            else
+            {
+                Runtime.getRuntime().exec("clear");
+            }
+        }
+        catch (IOException | InterruptedException ex)
+        {
+        }
+    
+    }
+
     //Checking whether the tables are present or not. 
     public void checkTables(String dbName)throws Exception
     {
@@ -82,8 +103,7 @@ public class Student1
     //Adding new admin
     public void adminMenu1()throws Exception
     {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         System.out.println("Enter username of new admin: ");
         String u = br.readLine().toUpperCase();
         System.out.println("Enter password of new admin: ");
@@ -93,16 +113,14 @@ public class Student1
         ps.setString(1, u);
         ps.setInt(2, p);
         ps.executeUpdate();
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         System.out.println("\n"+u+" has been added to admin table");
     }
 
     //Deleting admin
     public void adminMenu2()throws Exception
     {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         System.out.println("Enter username of admin to delete: ");
         String u = br.readLine().toUpperCase();
         query = "DELETE FROM ADMIN WHERE ADMIN_NAME='"+u+"'";
@@ -113,8 +131,7 @@ public class Student1
     //Generating Registration Number
     public int generateRegNo()throws Exception
     {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         query = "SELECT MAX(REG_NO) FROM STUDENT";
         int x = 0;
         rs = st.executeQuery(query);
@@ -133,8 +150,7 @@ public class Student1
     //Adding all details of Student
     public void adminMenu3()throws Exception
     {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         reg_no = generateRegNo();
         System.out.println("Enter first name: ");
         f_name = br.readLine().toUpperCase();
@@ -185,8 +201,7 @@ public class Student1
     //Deleting student details
     public void adminMenu4()throws Exception
     {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         System.out.println("Enter registration number of student to delete: ");
         int r = Integer.parseInt(br.readLine());
         query = "DELETE FROM STUDENT WHERE REG_NO="+r;
@@ -201,8 +216,7 @@ public class Student1
     //Adding new Course details
     public void adminMenu5()throws Exception
     {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         System.out.println("Enter Course ID");
         String c = br.readLine().toUpperCase();
         System.out.println("Enter Course Name: ");
@@ -218,22 +232,27 @@ public class Student1
     //Deleting a Course
     public void adminMenu6()throws Exception
     {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         System.out.println("Enter course name: ");
         String cn = br.readLine().toUpperCase();
-        query = "DELETE FROM COURSE WHERE COURSE_NAME='"+cn+"'";
-        st.executeUpdate(query);
-        System.out.println("\nDeletion of course details successful");
-        st.close();
-        con.close();
+        query = "SELECT S.REG_NO, S.F_NAME, S.L_NAME, S.YEAR, S.SECTION, S.ROLL_NO, S.EMAIL, S.DOB, S.PHNO, G.CGPA FROM STUDENT S INNER JOIN ENROLL E ON S.REG_NO=E.REG_NO INNER JOIN COURSE C ON E.COURSE_ID=C.COURSE_ID INNER JOIN GRADE G ON S.REG_NO=G.REG_NO WHERE COURSE_NAME='"+cn+"'";
+        rs = st.executeQuery(query);
+        if(!rs.next())
+        {
+            query = "DELETE FROM COURSE WHERE COURSE_NAME='"+cn+"'";
+            st.executeUpdate(query);
+            System.out.println("\nDeletion of course details successful");
+        }
+        else
+        {
+            System.out.println("\nCourse is in progress. Cannot be removed!");
+        }
     }
 
     //Updating phone number of a student
     public void adminMenu7()throws Exception
     {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         System.out.println("Enter registration number: ");
         int r = Integer.parseInt(br.readLine());
         System.out.println("Enter new phone number: ");
@@ -246,8 +265,7 @@ public class Student1
     //Updating section and roll number
     public void adminMenu8()throws Exception
     {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         System.out.println("Enter registration number: ");
         int r = Integer.parseInt(br.readLine());
         System.out.println("Enter new section: ");
@@ -263,8 +281,7 @@ public class Student1
     //Updating the course enrolled by a student
     public void adminMenu9()throws Exception
     {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         System.out.println("Enter registration number: ");
         int r = Integer.parseInt(br.readLine());
         System.out.println("Enter new course id: ");
@@ -277,8 +294,7 @@ public class Student1
     //Updating the CGPA of a student
     public void adminMenu10()throws Exception
     {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         st = con.createStatement();
         System.out.println("Enter registration number: ");
         int r = Integer.parseInt(br.readLine());
@@ -292,8 +308,7 @@ public class Student1
     //Function for all the admin operations
     public boolean admin()throws Exception
     {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         System.out.println("Enter admin username: ");
         String u = br.readLine();
         System.out.println("Enter password: ");
@@ -302,8 +317,7 @@ public class Student1
         rs = st.executeQuery(query);
         if(rs.next())
         {
-            System.out.print("\033[H\033[2J");  
-            System.out.flush();
+            clrscr();
             System.out.println("\nWelcome "+u+"!");
             int choice = 0;
             while(choice!=11)
@@ -354,6 +368,7 @@ public class Student1
                     adminMenu10();
                     break;
                     case 11:
+                    clrscr();
                     break;
                     default:
                     System.out.println("Invalid Choice");
@@ -377,8 +392,7 @@ public class Student1
     //Display all students
     public void userMenu1()throws Exception
     {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         query = "SELECT S.REG_NO, S.F_NAME, S.L_NAME, S.YEAR, S.SECTION, S.ROLL_NO, S.EMAIL, S.DOB, S.PHNO, C.COURSE_NAME, G.CGPA FROM STUDENT S INNER JOIN ENROLL E ON S.REG_NO=E.REG_NO INNER JOIN COURSE C ON E.COURSE_ID=C.COURSE_ID INNER JOIN GRADE G ON S.REG_NO=G.REG_NO";
         rs = st.executeQuery(query);
         ResultSetMetaData rsm = rs.getMetaData();
@@ -394,8 +408,7 @@ public class Student1
     //Search student by name
     public void userMenu2()throws Exception
     {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         System.out.println("Enter first name: ");
         String f_name = br.readLine().toUpperCase();
         System.out.println("Enter last name: ");
@@ -412,15 +425,14 @@ public class Student1
         }
         else
         {
-            System.out.println("\n"+f_name+" "+l_name+" not present in the table");
+            System.out.println("\nGiven name does not exist!");
         }
     }
 
     //Search student by year, section, roll no
     public void userMenu3()throws Exception
     {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         System.out.println("Enter year: ");
         year = Integer.parseInt(br.readLine());
         System.out.println("Enter section: ");
@@ -440,15 +452,14 @@ public class Student1
         }
         else
         {
-            System.out.println("\nStudent does not exist");
+            System.out.println("\nStudent does not exist!");
         }
     }
 
     //Search studemts by registration number
     public void userMenu4()throws Exception
     {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         System.out.println("Enter registration no.: ");
         reg_no = Integer.parseInt(br.readLine());
         query = "SELECT S.F_NAME, S.L_NAME, S.YEAR, S.SECTION, S.ROLL_NO, S.EMAIL, S.DOB, S.PHNO, C.COURSE_NAME, G.CGPA FROM STUDENT S INNER JOIN ENROLL E ON S.REG_NO=E.REG_NO INNER JOIN COURSE C ON E.COURSE_ID=C.COURSE_ID INNER JOIN GRADE G ON S.REG_NO=G.REG_NO WHERE REG_NO="+reg_no;
@@ -463,15 +474,14 @@ public class Student1
         }
         else
         {
-            System.out.println("Given year does not exist");
+            System.out.println("\nGiven registration number does not exist!");
         }
     }
 
     //Search students studying in a specific year
     public void userMenu5()throws Exception
     {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         System.out.println("Enter year: ");
         year = Integer.parseInt(br.readLine());
         query = "SELECT S.REG_NO, S.F_NAME, S.L_NAME, S.SECTION, S.ROLL_NO, S.EMAIL, S.DOB, S.PHNO, C.COURSE_NAME, G.CGPA FROM STUDENT S INNER JOIN ENROLL E ON S.REG_NO=E.REG_NO INNER JOIN COURSE C ON E.COURSE_ID=C.COURSE_ID INNER JOIN GRADE G ON S.REG_NO=G.REG_NO WHERE YEAR="+year;
@@ -479,18 +489,30 @@ public class Student1
         ResultSetMetaData rsm = rs.getMetaData();   //For printing the column names
         System.out.printf("\n%-10s%-10s%-10s%-10s%-10s%-30s%-20s%-15s%-15s%-10s", rsm.getColumnName(1), rsm.getColumnName(2), rsm.getColumnName(3), rsm.getColumnName(4), rsm.getColumnName(5), rsm.getColumnName(6), rsm.getColumnName(7), rsm.getColumnName(8), rsm.getColumnName(9), rsm.getColumnName(10));
         System.out.println();
-        while(rs.next())
+        int count = 0;
+        while(true)
         {
-            System.out.printf("%-10d%-10s%-10s%-10s%-10d%-30s%-20s%-15s%-15s%-10s", rs.getInt("REG_NO"), rs.getString("F_NAME"), rs.getString("L_NAME"), rs.getString("SECTION"), rs.getInt("ROLL_NO"), rs.getString("EMAIL"), displayDate(rs.getString("DOB")), rs.getString("PHNO"), rs.getString("COURSE_NAME"), rs.getBigDecimal("CGPA"));
-            System.out.println();
+            if(rs.next())
+            {
+                System.out.printf("%-10d%-10s%-10s%-10s%-10d%-30s%-20s%-15s%-15s%-10s", rs.getInt("REG_NO"), rs.getString("F_NAME"), rs.getString("L_NAME"), rs.getString("SECTION"), rs.getInt("ROLL_NO"), rs.getString("EMAIL"), displayDate(rs.getString("DOB")), rs.getString("PHNO"), rs.getString("COURSE_NAME"), rs.getBigDecimal("CGPA"));
+                System.out.println();
+                count++;
+            }
+            else
+            {
+                break;
+            }
+        }
+        if(count==0)
+        {
+            System.out.println("\nGiven year does not exist!");
         }
     }
 
     //Search students studying a specific course
     public void userMenu6()throws Exception
     {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         System.out.println("Enter course name: ");
         course_name = br.readLine().toUpperCase();
         query = "SELECT S.REG_NO, S.F_NAME, S.L_NAME, S.YEAR, S.SECTION, S.ROLL_NO, S.EMAIL, S.DOB, S.PHNO, G.CGPA FROM STUDENT S INNER JOIN ENROLL E ON S.REG_NO=E.REG_NO INNER JOIN COURSE C ON E.COURSE_ID=C.COURSE_ID INNER JOIN GRADE G ON S.REG_NO=G.REG_NO WHERE COURSE_NAME='"+course_name+"'";
@@ -498,18 +520,30 @@ public class Student1
         ResultSetMetaData rsm = rs.getMetaData();
         System.out.printf("\n%-10s%-10s%-10s%-10s%-10s%-10s%-30s%-20s%-15s%-15s", rsm.getColumnName(1), rsm.getColumnName(2), rsm.getColumnName(3), rsm.getColumnName(4), rsm.getColumnName(5), rsm.getColumnName(6), rsm.getColumnName(7), rsm.getColumnName(8), rsm.getColumnName(9), rsm.getColumnName(10));
         System.out.println();
-        while(rs.next())
+        int count = 0;
+        while(true)
         {
-            System.out.printf("%-10d%-10s%-10s%-10d%-10s%-10d%-30s%-20s%-15s%-15s", rs.getInt("REG_NO"), rs.getString("F_NAME"), rs.getString("L_NAME"), rs.getInt("YEAR"), rs.getString("SECTION"), rs.getInt("ROLL_NO"), rs.getString("EMAIL"), displayDate(rs.getString("DOB")), rs.getString("PHNO"), rs.getString("CGPA"));
-            System.out.println();
+            if(rs.next())
+            {
+                System.out.printf("%-10d%-10s%-10s%-10d%-10s%-10d%-30s%-20s%-15s%-15s", rs.getInt("REG_NO"), rs.getString("F_NAME"), rs.getString("L_NAME"), rs.getInt("YEAR"), rs.getString("SECTION"), rs.getInt("ROLL_NO"), rs.getString("EMAIL"), displayDate(rs.getString("DOB")), rs.getString("PHNO"), rs.getString("CGPA"));
+                System.out.println();
+                count++;
+            }
+            else
+            {
+                break;
+            }
+        }
+        if(count==0)
+        {
+            System.out.println("\nGiven course does not exist!");
         }
     }
 
     //Higher than a specific CGPA
     public void userMenu7()throws Exception
     {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         System.out.println("Enter a CGPA:");
         cgpa = Double.parseDouble(br.readLine());
         query = "SELECT S.REG_NO, S.F_NAME, S.L_NAME, S.YEAR, S.SECTION, S.ROLL_NO, S.EMAIL, S.DOB, S.PHNO, C.COURSE_NAME FROM STUDENT S INNER JOIN ENROLL E ON S.REG_NO=E.REG_NO INNER JOIN COURSE C ON E.COURSE_ID=C.COURSE_ID INNER JOIN GRADE G ON S.REG_NO=G.REG_NO WHERE G.CGPA>"+cgpa;
@@ -527,8 +561,7 @@ public class Student1
     //Display highest CGPA in respective course and year
     public void userMenu8()throws Exception
     {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         query = "SELECT S.YEAR, C.COURSE_NAME, MAX(G.CGPA) AS CGPA FROM STUDENT S, ENROLL E, COURSE C, GRADE G WHERE S.REG_NO=E.REG_NO AND C.COURSE_ID=E.COURSE_ID AND S.REG_NO=G.REG_NO GROUP BY C.COURSE_NAME, S.YEAR ORDER BY YEAR, COURSE_NAME";
         rs = st.executeQuery(query);
         ResultSetMetaData rsm = rs.getMetaData();
@@ -544,8 +577,7 @@ public class Student1
     //Function for all user operations
     public void user()throws Exception
     {
-        System.out.print("\033[H\033[2J");  
-        System.out.flush();
+        clrscr();
         int choice = 0;
         while(choice!=9)
         {
@@ -587,15 +619,18 @@ public class Student1
                 userMenu8();
                 break;
                 case 9:
+                clrscr();
                 break;
                 default:
                 System.out.println("Invalid Choice");
             }
         }
     }
+
     public static void main(String args[])throws Exception
     {
         int choice = 0;
+        int fail_count = 0;
         while(choice!=3)
         {
             try
@@ -605,9 +640,6 @@ public class Student1
                 st = con.createStatement();
                 Student1 s = new Student1();
                 s.checkTables("xe");
-                int fail_count = 0;
-                System.out.print("\033[H\033[2J");  
-                System.out.flush();
                 System.out.println("\n1. Admin Mode");
                 System.out.println("2. User Mode");
                 System.out.println("3. Exit");
@@ -629,6 +661,10 @@ public class Student1
                             System.out.println("You have entered wrong credentials 3 times. Terminating the program.");
                             System.exit(0);
                         }
+                    }
+                    else
+                    {
+                        clrscr();
                     }
                     break;
                     case 2:
