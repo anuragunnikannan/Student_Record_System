@@ -114,7 +114,7 @@ public class Student1
         ps.setInt(2, p);
         ps.executeUpdate();
         clrscr();
-        System.out.println("\n"+u+" has been added to admin table");
+        System.out.println("\n"+u+" has been added to admin");
     }
 
     //Deleting admin
@@ -124,8 +124,15 @@ public class Student1
         System.out.println("Enter username of admin to delete: ");
         String u = br.readLine().toUpperCase();
         query = "DELETE FROM ADMIN WHERE ADMIN_NAME='"+u+"'";
-        st.executeUpdate(query);
-        System.out.println("\n"+u+" has been deleted from admin table");
+        int deleted = st.executeUpdate(query);
+        if(deleted!=0)
+        {
+            System.out.println("\n"+u+" has been deleted from admin");
+        }
+        else
+        {
+            System.out.println("\n"+u+" not found in admin");
+        }
     }
 
     //Generating Registration Number
@@ -205,12 +212,19 @@ public class Student1
         System.out.println("Enter registration number of student to delete: ");
         int r = Integer.parseInt(br.readLine());
         query = "DELETE FROM STUDENT WHERE REG_NO="+r;
-        st.executeUpdate(query);
-        query = "DELETE FROM ENROLL WHERE REG_NO="+r;
-        st.executeUpdate(query);
-        query = "DELETE FROM GRADE WHERE REG_NO="+r;
-        st.executeUpdate(query);
-        System.out.println("\nDeletion of student details successful");
+        int deleted = st.executeUpdate(query);
+        if(deleted!=0)
+        {
+            query = "DELETE FROM ENROLL WHERE REG_NO="+r;
+            st.executeUpdate(query);
+            query = "DELETE FROM GRADE WHERE REG_NO="+r;
+            st.executeUpdate(query);
+            System.out.println("\nDeletion of student details successful");
+        }
+        else
+        {
+            System.out.println("Student with Registration Number = "+r+" not found!");
+        }
     }
 
     //Adding new Course details
@@ -240,8 +254,15 @@ public class Student1
         if(!rs.next())
         {
             query = "DELETE FROM COURSE WHERE COURSE_NAME='"+cn+"'";
-            st.executeUpdate(query);
-            System.out.println("\nDeletion of course details successful");
+            int deleted = st.executeUpdate(query);
+            if(deleted!=0)
+            {
+                System.out.println("\nDeletion of course details successful");
+            }
+            else
+            {
+                System.out.println("\nDeletion of course details unsuccessful");
+            }
         }
         else
         {
@@ -258,8 +279,15 @@ public class Student1
         System.out.println("Enter new phone number: ");
         String ph = br.readLine();
         query = "UPDATE STUDENT SET PHNO='"+ph+"' WHERE REG_NO="+r;
-        st.executeUpdate(query);
-        System.out.println("\nPhone number of student registration number = "+r+" has been updated");
+        int updated = st.executeUpdate(query);
+		if(updated!=0)
+		{
+			System.out.println("\nPhone number of student registration number = "+r+" has been updated");
+		}
+		else
+		{
+			System.out.println("\nUpdation Unsuccessful. Registration Number does not exist!");
+		}
     }
 
     //Updating section and roll number
@@ -274,8 +302,15 @@ public class Student1
         System.out.println("Enter new roll number: ");
         int ro = Integer.parseInt(br.readLine());
         query = "UPDATE STUDENT SET SECTION='"+s+"', ROLL_NO="+ro+" WHERE REG_NO="+r;
-        st.executeUpdate(query);
-        System.out.println("\nSection and roll number of student registration number = "+r+" has been updated");
+        int updated = st.executeUpdate(query);
+        if(updated!=0)
+        {
+            System.out.println("\nSection and roll number of student registration number = "+r+" has been updated");
+        }
+        else
+        {
+            System.out.println("\nUpdation Unsuccessful. Registration Number does not exist!");
+        }
     }
 
     //Updating the course enrolled by a student
@@ -286,9 +321,25 @@ public class Student1
         int r = Integer.parseInt(br.readLine());
         System.out.println("Enter new course id: ");
         String id = br.readLine();
-        query = "UPDATE ENROLL SET COURSE_ID='"+id+"' WHERE REG_NO="+r;
-        st.executeUpdate(query);
-        System.out.println("\nUpdation of course for student registration number = "+r+" has been successful");
+        query = "SELECT * FROM COURSE WHERE COURSE_ID="+id;
+        rs = st.executeQuery(query);
+        if(!rs.next())
+        {
+            System.out.println("\nCourse does not exist!");
+        }
+        else
+        {
+            query = "UPDATE ENROLL SET COURSE_ID='"+id+"' WHERE REG_NO="+r;
+            int updated = st.executeUpdate(query);
+            if(updated!=0)
+            {
+                System.out.println("\nUpdation of course for student registration number = "+r+" has been successful");
+            }
+            else
+            {
+                System.out.println("\nUpdation Unsuccessful. Registration Number/Course ID does not exist!");
+            }
+        }
     }
 
     //Updating the CGPA of a student
@@ -301,8 +352,15 @@ public class Student1
         System.out.println("Enter new CGPA: ");
         double c = Double.parseDouble(br.readLine());
         query = "UPDATE GRADE SET CGPA="+c+" WHERE REG_NO="+r;
-        st.executeUpdate(query);
-        System.out.println("\nUpdation of CGPA of student registration number = "+r+" has been successful");
+        int updated = st.executeUpdate(query);
+        if(updated!=0)
+        {
+            System.out.println("\nUpdation of CGPA of student registration number = "+r+" has been successful");
+        }
+        else
+        {
+            System.out.println("\nUpdation Unsuccessful. Registration Number does not exist!");
+        }
     }
 
     //Function for all the admin operations
@@ -311,6 +369,7 @@ public class Student1
         clrscr();
         System.out.println("Enter admin username: ");
         String u = br.readLine();
+        u = u.toUpperCase();
         System.out.println("Enter password: ");
         int p = Integer.parseInt(br.readLine());
         query = "SELECT * FROM ADMIN WHERE ADMIN_NAME='"+u+"' AND PASSWORD="+p;
