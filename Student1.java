@@ -20,7 +20,7 @@ public class Student1
     static final String DRIVER = "oracle.jdbc.driver.OracleDriver";
     static final String URL = "jdbc:oracle:thin:@localhost:1521:XE";   //For connection to database
     static final String USERNAME = "system";
-    static final String PASSWORD = "oracle";
+    static final String PASSWORD = "abcd1234";
 
     static Connection con = null;
     static Statement st = null;
@@ -694,11 +694,12 @@ public class Student1
         {
             try
             {
-                Class.forName("oracle.jdbc.driver.OracleDriver");
+                // Class.forName("oracle.jdbc.driver.OracleDriver");
+				Class.forName(DRIVER);
                 con = DriverManager.getConnection(URL, USERNAME, PASSWORD);
                 st = con.createStatement();
                 Student1 s = new Student1();
-                s.checkTables("xe");
+                s.checkTables("XE");
                 System.out.println("\n1. Admin Mode");
                 System.out.println("2. User Mode");
                 System.out.println("3. Exit");
