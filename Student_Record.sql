@@ -1,0 +1,85 @@
+CREATE TABLE IF NOT EXISTS Admins(Admin_Name VARCHAR(50), Password VARCHAR(255), PRIMARY KEY(Admin_Name));
+
+INSERT INTO Admins VALUES('ABCDEF', SHA2('12345', 256));
+INSERT INTO Admins VALUES('EFGHI', SHA2('6789', 256));
+select * from information_schema.tables where table_name='Admins';
+
+CREATE TABLE IF NOT EXISTS Students(Reg_No INT PRIMARY KEY, 
+					F_Name VARCHAR(50) NOT NULL, 
+                    L_Name VARCHAR(50),
+                    S_Year INT NOT NULL,
+                    Section VARCHAR(1) NOT NULL,
+                    Roll_No INT NOT NULL,
+                    Email VARCHAR(50) CHECK(Email LIKE '%_@__%.__%') UNIQUE,
+                    Dob DATE NOT NULL,
+                    Phno CHAR(10) NOT NULL UNIQUE,
+                    CONSTRAINT Sec_roll UNIQUE(S_Year, Section, Roll_No));
+
+CREATE TABLE IF NOT EXISTS Courses(Course_ID INT PRIMARY KEY,
+					Course_Name VARCHAR(50));
+                    
+CREATE TABLE IF NOT EXISTS Enrolls(Reg_No INT PRIMARY KEY,
+					Course_ID INT,
+                    FOREIGN KEY (Reg_No) REFERENCES Students(Reg_No) ON DELETE CASCADE,
+                    FOREIGN KEY (Course_ID) REFERENCES Courses(Course_ID) ON DELETE CASCADE);
+            
+CREATE TABLE IF NOT EXISTS GRADES(Reg_No INT PRIMARY KEY,
+					CGPA DECIMAL(2, 1),
+                    FOREIGN KEY (Reg_No) REFERENCES Students(Reg_No) ON DELETE CASCADE);
+
+INSERT INTO Students VALUES
+	(10001, 'Ranjeet', 'Nikhil', 1, 'C', 20, 'ranjeetnikhil@wxyz.com', '1997-03-19', 2593578464),
+    (10002, 'Nathan', 'Wilson', 1, 'A', 21, 'nathanwilson@wxyz.com', '1997-02-17', 2025550181),
+	(10003, 'William', 'Hunter', 2, 'C', 17, 'williamhunter@wxyz.com', '1996-06-25', 2025551282),
+    (10004, 'Trevor', 'Peters', 1, 'E', 39, 'trevorpeters@wxyz.com', '1997-08-05', 2021782335),
+    (10005, 'Helen', 'Wright', 3, 'B', 42, 'helenwright@wxyz.com', '1995-07-05', 1597533698),
+	(10006, 'Rohan', 'Abhay', 1, 'B', 44, 'rohanabhay@wxyz.com', '1997-01-04', 2143673652),
+    (10007, 'Ramesh', 'Singh', 1, 'C', 21, 'rameshsingh@wxyz.com', '1999-01-17', 2356987204);
+    
+INSERT INTO Courses VALUES
+	(101, 'Physics'),
+    (102, 'Economics'),
+    (103, 'Computer Sc.'),
+    (104, 'Electronics');
+    
+INSERT INTO Enrolls VALUES
+	(10001, 103),
+    (10002, 103),
+    (10003, 102),
+    (10004, 101),
+    (10005, 101),
+    (10006, 103),
+    (10007, 104);
+    
+INSERT INTO Grades VALUES
+	(10001, 9.4),
+    (10002, 9.1),
+    (10003, 8.8),
+    (10004, 9.6),
+    (10005, 8.8),
+    (10006, 8.4),
+    (10007, 9.7);
+    
+# Display all students
+SELECT S.REG_NO, S.F_NAME, S.L_NAME, S.S_YEAR, S.SECTION, S.ROLL_NO, S.EMAIL, S.DOB, S.PHNO, C.COURSE_NAME, G.CGPA FROM STUDENTS S INNER JOIN ENROLLS E ON S.REG_NO=E.REG_NO INNER JOIN COURSES C ON E.COURSE_ID=C.COURSE_ID INNER JOIN GRADES G ON S.REG_NO=G.REG_NO;
+
+# Search student by name
+SELECT S.REG_NO, S.S_YEAR, S.SECTION, S.ROLL_NO, S.EMAIL, S.DOB, S.PHNO, C.COURSE_NAME, G.CGPA FROM STUDENTS S INNER JOIN ENROLLS E ON S.REG_NO=E.REG_NO INNER JOIN COURSES C ON E.COURSE_ID=C.COURSE_ID INNER JOIN GRADES G ON S.REG_NO=G.REG_NO WHERE F_NAME='Ranjeet' AND L_NAME='Nikhil';
+
+# Search student by year, section and roll no.
+SELECT S.REG_NO, S.F_NAME, S.L_NAME, S.EMAIL, S.DOB, S.PHNO, C.COURSE_NAME, G.CGPA FROM STUDENTS S INNER JOIN ENROLLS E ON S.REG_NO=E.REG_NO INNER JOIN COURSES C ON E.COURSE_ID=C.COURSE_ID INNER JOIN GRADES G ON S.REG_NO=G.REG_NO WHERE S_YEAR=1 AND SECTION='C' AND ROLL_NO=20;
+
+# Search student by reg_no
+SELECT S.F_NAME, S.L_NAME, S.S_YEAR, S.SECTION, S.ROLL_NO, S.EMAIL, S.DOB, S.PHNO, C.COURSE_NAME, G.CGPA FROM STUDENTS S INNER JOIN ENROLLS E ON S.REG_NO=E.REG_NO INNER JOIN COURSES C ON E.COURSE_ID=C.COURSE_ID INNER JOIN GRADES G ON S.REG_NO=G.REG_NO WHERE S.REG_NO=10002;
+
+# Search students studying in a specific year
+SELECT S.REG_NO, S.F_NAME, S.L_NAME, S.SECTION, S.ROLL_NO, S.EMAIL, S.DOB, S.PHNO, C.COURSE_NAME, G.CGPA FROM STUDENTS S INNER JOIN ENROLLS E ON S.REG_NO=E.REG_NO INNER JOIN COURSES C ON E.COURSE_ID=C.COURSE_ID INNER JOIN GRADES G ON S.REG_NO=G.REG_NO WHERE S_YEAR=1;
+
+# Search students studying a specific course
+SELECT S.REG_NO, S.F_NAME, S.L_NAME, S.S_YEAR, S.SECTION, S.ROLL_NO, S.EMAIL, S.DOB, S.PHNO, G.CGPA FROM STUDENTS S INNER JOIN ENROLLS E ON S.REG_NO=E.REG_NO INNER JOIN COURSES C ON E.COURSE_ID=C.COURSE_ID INNER JOIN GRADES G ON S.REG_NO=G.REG_NO WHERE COURSE_NAME='PHYSICS';
+
+# Display students having more than a specific CGPA
+SELECT S.REG_NO, S.F_NAME, S.L_NAME, S.S_YEAR, S.SECTION, S.ROLL_NO, S.EMAIL, S.DOB, S.PHNO, C.COURSE_NAME FROM STUDENTS S INNER JOIN ENROLLS E ON S.REG_NO=E.REG_NO INNER JOIN COURSES C ON E.COURSE_ID=C.COURSE_ID INNER JOIN GRADES G ON S.REG_NO=G.REG_NO WHERE G.CGPA > 9.0;
+
+# Display highest CGPA in respective course and year
+SELECT S.S_YEAR, C.COURSE_NAME, MAX(G.CGPA) AS CGPA FROM STUDENTS S, ENROLLS E, COURSES C, GRADES G WHERE S.REG_NO=E.REG_NO AND C.COURSE_ID=E.COURSE_ID AND S.REG_NO=G.REG_NO GROUP BY C.COURSE_NAME, S.S_YEAR ORDER BY S_YEAR, COURSE_NAME;
