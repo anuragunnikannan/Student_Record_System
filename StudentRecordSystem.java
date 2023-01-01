@@ -17,10 +17,13 @@ public class StudentRecordSystem
 
     String query;
 
-    static final String DRIVER = "com.mysql.jdbc.Driver";
+    /* static final String DRIVER = "com.mysql.jdbc.Driver"; */
+    static final String DRIVER = "com.mysql.cj.jdbc.Driver";
     static final String URL = "jdbc:mysql://localhost:3306/mydb";   //For connection to database
+    /* static final String USERNAME = "system"; */
     static final String USERNAME = "root";
-    static final String PASSWORD = "mysql";
+    /* static final String PASSWORD = "mysql"; */
+    static final String PASSWORD = "helloworld";
 
     static Connection con = null;
     static Statement st = null;
@@ -54,12 +57,12 @@ public class StudentRecordSystem
     public void checkTables()throws Exception
     {
         st = con.createStatement();
-        query = "SELECT * FROM information_schema.tables WHERE table_name='Admins'";
+        query = "SELECT * FROM information_schema.tables WHERE table_name='admins'";
         rs = st.executeQuery(query);
         if(!rs.next())
         {
             //creating Admins table
-            query = "CREATE TABLE IF NOT EXISTS Admins(Admin_Name VARCHAR(50), Password VARCHAR(255), PRIMARY KEY(Admin_Name))";
+            query = "CREATE TABLE IF NOT EXISTS admins(admin_name VARCHAR(50), password VARCHAR(255), PRIMARY KEY(admin_name))";
             st.executeUpdate(query);
             System.out.println("Admins Table Created\n");
             System.out.println("Enter Admin Name:");
@@ -68,7 +71,7 @@ public class StudentRecordSystem
             Console console = System.console();
             char arr[] = console.readPassword();
             String p = String.valueOf(arr);
-            query = "INSERT INTO Admins VALUES(?, SHA2(?, 256))";
+            query = "INSERT INTO admins VALUES(?, SHA2(?, 256))";
             ps = con.prepareStatement(query);
             ps.setString(1, u);
             ps.setString(2, p);
@@ -77,22 +80,22 @@ public class StudentRecordSystem
             System.out.println("Admin account created\n");
 
             //creating Students table
-            query = "CREATE TABLE IF NOT EXISTS Students(Reg_No INT PRIMARY KEY, F_Name VARCHAR(50) NOT NULL, L_Name VARCHAR(50), S_Year INT NOT NULL, Section VARCHAR(1) NOT NULL, Roll_No INT NOT NULL, Email VARCHAR(50) CHECK(Email LIKE '%_@__%.__%') UNIQUE, Dob DATE NOT NULL, Phno CHAR(10) NOT NULL UNIQUE,CONSTRAINT Sec_roll UNIQUE(S_Year, Section, Roll_No))";
+            query = "CREATE TABLE IF NOT EXISTS students(reg_no INT PRIMARY KEY, f_name VARCHAR(50) NOT NULL, l_name VARCHAR(50), s_year INT NOT NULL, section VARCHAR(1) NOT NULL, roll_no INT NOT NULL, email VARCHAR(50) CHECK(email LIKE '%_@__%.__%') UNIQUE, dob DATE NOT NULL, phno CHAR(10) NOT NULL UNIQUE,CONSTRAINT sec_roll UNIQUE(s_year, section, roll_no))";
             st.executeUpdate(query);
             System.out.println("Students Table Created\n");
 
             //creating Courses table
-            query = "CREATE TABLE IF NOT EXISTS Courses(Course_ID INT PRIMARY KEY, Course_Name VARCHAR(50))";
+            query = "CREATE TABLE IF NOT EXISTS courses(course_id INT PRIMARY KEY, course_name VARCHAR(50))";
             st.executeUpdate(query);
             System.out.println("Courses Table Created\n");
 
             //creating Enrolls table
-            query = "CREATE TABLE IF NOT EXISTS Enrolls(Reg_No INT PRIMARY KEY,Course_ID INT,FOREIGN KEY (Reg_No) REFERENCES Students(Reg_No) ON DELETE CASCADE,FOREIGN KEY (Course_ID) REFERENCES Courses(Course_ID) ON DELETE CASCADE)";
+            query = "CREATE TABLE IF NOT EXISTS enrolls(reg_no INT PRIMARY KEY,course_id INT,FOREIGN KEY (reg_no) REFERENCES students(reg_no) ON DELETE CASCADE,FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE)";
             st.executeUpdate(query);
             System.out.println("Enrolls Table Created\n");
 
             //creating Grades table
-            query = "CREATE TABLE IF NOT EXISTS GRADES(Reg_No INT PRIMARY KEY, CGPA DECIMAL(2, 1), FOREIGN KEY (Reg_No) REFERENCES Students(Reg_No) ON DELETE CASCADE)";
+            query = "CREATE TABLE IF NOT EXISTS grades(reg_no INT PRIMARY KEY, cgpa DECIMAL(2, 1), FOREIGN KEY (reg_no) REFERENCES students(reg_no) ON DELETE CASCADE)";
             st.executeUpdate(query);
             System.out.println("Grades Table Created\n");
         }
@@ -108,7 +111,7 @@ public class StudentRecordSystem
         Console console = System.console();
         char arr[] = console.readPassword();
         String p = String.valueOf(arr);
-        query = "INSERT INTO Admins VALUES(?, SHA2(?, 256))";
+        query = "INSERT INTO admins VALUES(?, SHA2(?, 256))";
         ps = con.prepareStatement(query);
         ps.setString(1, u);
         ps.setString(2, p);
@@ -123,7 +126,7 @@ public class StudentRecordSystem
         clrscr();
         System.out.println("Enter username of admin to delete: ");
         String u = br.readLine().toUpperCase();
-        query = "DELETE FROM Admins WHERE Admin_Name='"+u+"'";
+        query = "DELETE FROM admins WHERE admin_name='"+u+"'";
         int deleted = st.executeUpdate(query);
         if(deleted!=0)
         {
@@ -139,13 +142,17 @@ public class StudentRecordSystem
     public int generateRegNo()throws Exception
     {
         clrscr();
-        query = "SELECT MAX(REG_NO) FROM STUDENTS";
+        query = "SELECT MAX(reg_no) FROM students";
         int x = 10001;
         rs = st.executeQuery(query);
         if(rs.next())
         {
             x = rs.getInt(1);
-            if(x >= 10001)
+            if(x == 0)
+            {
+                x = 10001;
+            }
+            else if(x >= 10001)
             {
                 x++;        //generates reg_no from 10001 and onwards.
             }
@@ -179,7 +186,7 @@ public class StudentRecordSystem
         course_id = br.readLine().toUpperCase();
         System.out.println("Enter grade: ");
         cgpa = Double.parseDouble(br.readLine());
-        query = "INSERT INTO STUDENTS VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        query = "INSERT INTO students VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
         ps = con.prepareStatement(query);
         ps.setInt(1, reg_no);
         ps.setString(2, f_name);
@@ -191,12 +198,12 @@ public class StudentRecordSystem
         ps.setString(8, dob);
         ps.setString(9, phno);
         ps.executeUpdate();
-        query = "INSERT INTO ENROLLS VALUES(?, ?)";
+        query = "INSERT INTO enrolls VALUES(?, ?)";
         ps = con.prepareStatement(query);
         ps.setInt(1, reg_no);
         ps.setString(2, course_id);
         ps.executeUpdate();
-        query = "INSERT INTO GRADES VALUES(?, ?)";
+        query = "INSERT INTO grades VALUES(?, ?)";
         ps = con.prepareStatement(query);
         ps.setInt(1, reg_no);
         ps.setDouble(2, cgpa);
@@ -210,13 +217,13 @@ public class StudentRecordSystem
         clrscr();
         System.out.println("Enter registration number of student to delete: ");
         int r = Integer.parseInt(br.readLine());
-        query = "DELETE FROM STUDENTS WHERE REG_NO="+r;
+        query = "DELETE FROM students WHERE reg_no="+r;
         int deleted = st.executeUpdate(query);
         if(deleted!=0)
         {
-            query = "DELETE FROM ENROLLS WHERE REG_NO="+r;
+            query = "DELETE FROM enrolls WHERE reg_no="+r;
             st.executeUpdate(query);
-            query = "DELETE FROM GRADES WHERE REG_NO="+r;
+            query = "DELETE FROM grades WHERE reg_no="+r;
             st.executeUpdate(query);
             System.out.println("\nDeletion of student details successful");
         }
@@ -234,7 +241,7 @@ public class StudentRecordSystem
         String c = br.readLine().toUpperCase();
         System.out.println("Enter Course Name: ");
         String cn = br.readLine().toUpperCase();
-        query = "INSERT INTO COURSES VALUES(?, ?)";
+        query = "INSERT INTO courses VALUES(?, ?)";
         ps = con.prepareStatement(query);
         ps.setString(1, c);
         ps.setString(2, cn);
@@ -248,11 +255,11 @@ public class StudentRecordSystem
         clrscr();
         System.out.println("Enter course name: ");
         String cn = br.readLine().toUpperCase();
-        query = "SELECT S.REG_NO, S.F_NAME, S.L_NAME, S.YEAR, S.SECTION, S.ROLL_NO, S.EMAIL, S.DOB, S.PHNO, G.CGPA FROM STUDENTS S INNER JOIN ENROLLS E ON S.REG_NO=E.REG_NO INNER JOIN COURSES C ON E.COURSE_ID=C.COURSE_ID INNER JOIN GRADES G ON S.REG_NO=G.REG_NO WHERE COURSE_NAME='"+cn+"'";
+        query = "SELECT s.reg_no, s.f_name, s.l_name, s.year, s.section, s.roll_no, s.email, s.dob, s.phno, g.cgpa FROM students s INNER JOIN enrolls e ON s.reg_no=e.reg_no INNER JOIN courses c ON e.course_id=c.course_id INNER JOIN grades g ON s.reg_no=g.reg_no WHERE course_name='"+cn+"'";
         rs = st.executeQuery(query);
         if(!rs.next())
         {
-            query = "DELETE FROM COURSES WHERE COURSE_NAME='"+cn+"'";
+            query = "DELETE FROM courses WHERE course_name='"+cn+"'";
             int deleted = st.executeUpdate(query);
             if(deleted!=0)
             {
@@ -277,7 +284,7 @@ public class StudentRecordSystem
         int r = Integer.parseInt(br.readLine());
         System.out.println("Enter new phone number: ");
         String ph = br.readLine();
-        query = "UPDATE STUDENTS SET PHNO='"+ph+"' WHERE REG_NO="+r;
+        query = "UPDATE students SET phno='"+ph+"' WHERE reg_no="+r;
         int updated = st.executeUpdate(query);
 		if(updated!=0)
 		{
@@ -300,7 +307,7 @@ public class StudentRecordSystem
         br.readLine();
         System.out.println("Enter new roll number: ");
         int ro = Integer.parseInt(br.readLine());
-        query = "UPDATE STUDENTS SET SECTION='"+s+"', ROLL_NO="+ro+" WHERE REG_NO="+r;
+        query = "UPDATE students SET section='"+s+"', roll_no="+ro+" WHERE reg_no="+r;
         int updated = st.executeUpdate(query);
         if(updated!=0)
         {
@@ -320,7 +327,7 @@ public class StudentRecordSystem
         int r = Integer.parseInt(br.readLine());
         System.out.println("Enter new course id: ");
         String id = br.readLine();
-        query = "SELECT * FROM COURSES WHERE COURSE_ID="+id;
+        query = "SELECT * FROM courses WHERE course_id="+id;
         rs = st.executeQuery(query);
         if(!rs.next())
         {
@@ -328,7 +335,7 @@ public class StudentRecordSystem
         }
         else
         {
-            query = "UPDATE ENROLLS SET COURSE_ID='"+id+"' WHERE REG_NO="+r;
+            query = "UPDATE enrolls SET course_id='"+id+"' WHERE reg_no="+r;
             int updated = st.executeUpdate(query);
             if(updated!=0)
             {
@@ -341,20 +348,20 @@ public class StudentRecordSystem
         }
     }
 
-    //Updating the CGPA of a student
+    //Updating the cgpa of a student
     public void adminMenu10()throws Exception
     {
         clrscr();
         st = con.createStatement();
         System.out.println("Enter registration number: ");
         int r = Integer.parseInt(br.readLine());
-        System.out.println("Enter new CGPA: ");
+        System.out.println("Enter new cgpa: ");
         double c = Double.parseDouble(br.readLine());
-        query = "UPDATE GRADES SET CGPA="+c+" WHERE REG_NO="+r;
+        query = "UPDATE grades SET cgpa="+c+" WHERE reg_no="+r;
         int updated = st.executeUpdate(query);
         if(updated!=0)
         {
-            System.out.println("\nUpdation of CGPA of student registration number = "+r+" has been successful");
+            System.out.println("\nUpdation of cgpa of student registration number = "+r+" has been successful");
         }
         else
         {
@@ -373,7 +380,7 @@ public class StudentRecordSystem
         Console console = System.console();
         char arr[] = console.readPassword();
         String p = String.valueOf(arr);
-        query = "SELECT * FROM ADMINS WHERE ADMIN_NAME='"+u+"' AND PASSWORD=SHA2('"+p+"', 256)";
+        query = "SELECT * FROM admins WHERE admin_name='"+u+"' AND password=SHA2('"+p+"', 256)";
         rs = st.executeQuery(query);
         if(rs.next())
         {
@@ -391,7 +398,7 @@ public class StudentRecordSystem
                 System.out.println("7. Update Phone Number");
                 System.out.println("8. Update Section and Roll No.");
                 System.out.println("9. Update enrolled course");
-                System.out.println("10. Update CGPA");
+                System.out.println("10. Update cgpa");
                 System.out.println("11. Exit");
                 System.out.println("\nEnter your choice: ");
                 choice = Integer.parseInt(br.readLine());
@@ -453,14 +460,14 @@ public class StudentRecordSystem
     public void userMenu1()throws Exception
     {
         clrscr();
-        query = "SELECT S.REG_NO, S.F_NAME, S.L_NAME, S.S_YEAR, S.SECTION, S.ROLL_NO, S.EMAIL, S.DOB, S.PHNO, C.COURSE_NAME, G.CGPA FROM STUDENTS S INNER JOIN ENROLLS E ON S.REG_NO=E.REG_NO INNER JOIN COURSES C ON E.COURSE_ID=C.COURSE_ID INNER JOIN GRADES G ON S.REG_NO=G.REG_NO";
+        query = "SELECT s.reg_no, s.f_name, s.l_name, s.s_year, s.section, s.roll_no, s.email, s.dob, s.phno, c.course_name, g.cgpa FROM students s INNER JOIN enrolls e ON s.reg_no=e.reg_no INNER JOIN courses c ON e.course_id=c.course_id INNER JOIN grades g ON s.reg_no=g.reg_no";
         rs = st.executeQuery(query);
         ResultSetMetaData rsm = rs.getMetaData();
         System.out.printf("\n%-10s%-10s%-10s%-10s%-10s%-10s%-30s%-20s%-15s%-15s%-10s", rsm.getColumnName(1), rsm.getColumnName(2), rsm.getColumnName(3), rsm.getColumnName(4), rsm.getColumnName(5), rsm.getColumnName(6), rsm.getColumnName(7), rsm.getColumnName(8), rsm.getColumnName(9), rsm.getColumnName(10), rsm.getColumnName(11));
         System.out.println();
         while(rs.next())
         {
-            System.out.printf("%-10d%-10s%-10s%-10d%-10s%-10d%-30s%-20s%-15s%-15s%-10s", rs.getInt("REG_NO"), rs.getString("F_NAME"), rs.getString("L_NAME"), rs.getInt("S_YEAR"), rs.getString("SECTION"), rs.getInt("ROLL_NO"), rs.getString("EMAIL"), displayDate(rs.getString("DOB")), rs.getString("PHNO"), rs.getString("COURSE_NAME"), rs.getBigDecimal("CGPA"));
+            System.out.printf("%-10d%-10s%-10s%-10d%-10s%-10d%-30s%-20s%-15s%-15s%-10s", rs.getInt("reg_no"), rs.getString("f_name"), rs.getString("l_name"), rs.getInt("s_year"), rs.getString("section"), rs.getInt("roll_no"), rs.getString("email"), displayDate(rs.getString("dob")), rs.getString("phno"), rs.getString("course_name"), rs.getBigDecimal("cgpa"));
             System.out.println();
         }
     }
@@ -473,14 +480,14 @@ public class StudentRecordSystem
         String f_name = br.readLine().toUpperCase();
         System.out.println("Enter last name: ");
         String l_name = br.readLine().toUpperCase();
-        query = "SELECT S.REG_NO, S.S_YEAR, S.SECTION, S.ROLL_NO, S.EMAIL, S.DOB, S.PHNO, C.COURSE_NAME, G.CGPA FROM STUDENTS S INNER JOIN ENROLLS E ON S.REG_NO=E.REG_NO INNER JOIN COURSES C ON E.COURSE_ID=C.COURSE_ID INNER JOIN GRADES G ON S.REG_NO=G.REG_NO WHERE F_NAME='"+f_name+"' AND L_NAME='"+l_name+"'";
+        query = "SELECT s.reg_no, s.s_year, s.section, s.roll_no, s.email, s.dob, s.phno, c.course_name, g.cgpa FROM students s INNER JOIN enrolls e ON s.reg_no=e.reg_no INNER JOIN courses c ON e.course_id=c.course_id INNER JOIN grades g ON s.reg_no=g.reg_no WHERE f_name='"+f_name+"' AND l_name='"+l_name+"'";
         rs = st.executeQuery(query);
         if(rs.next())
         {
             ResultSetMetaData rsm = rs.getMetaData();   //For printing the column names
             System.out.printf("\n%-10s%-10s%-10s%-10s%-30s%-20s%-15s%-15s%-10s", rsm.getColumnName(1), rsm.getColumnName(2), rsm.getColumnName(3), rsm.getColumnName(4), rsm.getColumnName(5), rsm.getColumnName(6), rsm.getColumnName(7), rsm.getColumnName(8), rsm.getColumnName(9));
             System.out.println();
-            System.out.printf("%-10d%-10d%-10s%-10d%-30s%-20s%-15s%-15s%-10s", rs.getInt("REG_NO"), rs.getInt("S_YEAR"), rs.getString("SECTION").charAt(0), rs.getInt("ROLL_NO"), rs.getString("EMAIL"), displayDate(rs.getString("DOB")), rs.getString("PHNO"), rs.getString("COURSE_NAME"), rs.getBigDecimal("CGPA"));
+            System.out.printf("%-10d%-10d%-10s%-10d%-30s%-20s%-15s%-15s%-10s", rs.getInt("reg_no"), rs.getInt("s_year"), rs.getString("section").charAt(0), rs.getInt("roll_no"), rs.getString("email"), displayDate(rs.getString("dob")), rs.getString("phno"), rs.getString("course_name"), rs.getBigDecimal("cgpa"));
             System.out.println();
         }
         else
@@ -500,14 +507,14 @@ public class StudentRecordSystem
         br.readLine();
         System.out.println("Enter roll number: ");
         roll_no = Integer.parseInt(br.readLine());
-        query = "SELECT S.REG_NO, S.F_NAME, S.L_NAME, S.EMAIL, S.DOB, S.PHNO, C.COURSE_NAME, G.CGPA FROM STUDENTS S INNER JOIN ENROLLS E ON S.REG_NO=E.REG_NO INNER JOIN COURSES C ON E.COURSE_ID=C.COURSE_ID INNER JOIN GRADES G ON S.REG_NO=G.REG_NO WHERE S_YEAR="+year+" AND SECTION='"+section+"' AND ROLL_NO="+roll_no;
+        query = "SELECT s.reg_no, s.f_name, s.l_name, s.email, s.dob, s.phno, c.course_name, g.cgpa FROM students s INNER JOIN enrolls e ON s.reg_no=e.reg_no INNER JOIN courses c ON e.course_id=c.course_id INNER JOIN grades g ON s.reg_no=g.reg_no WHERE s_year="+year+" AND section='"+section+"' AND roll_no="+roll_no;
         rs = st.executeQuery(query);
         if(rs.next())
         {
             ResultSetMetaData rsm = rs.getMetaData();   //For printing the column names
             System.out.printf("\n%-10s%-10s%-10s%-30s%-20s%-15s%-15s%-10s", rsm.getColumnName(1), rsm.getColumnName(2), rsm.getColumnName(3), rsm.getColumnName(4), rsm.getColumnName(5), rsm.getColumnName(6), rsm.getColumnName(7), rsm.getColumnName(8));
             System.out.println();
-            System.out.printf("%-10d%-10s%-10s%-30s%-20s%-15s%-15s%-10s", rs.getInt("REG_NO"), rs.getString("F_NAME"), rs.getString("L_NAME"), rs.getString("EMAIL"), displayDate(rs.getString("DOB")), rs.getString("PHNO"), rs.getString("COURSE_NAME"), rs.getBigDecimal("CGPA"));
+            System.out.printf("%-10d%-10s%-10s%-30s%-20s%-15s%-15s%-10s", rs.getInt("reg_no"), rs.getString("f_name"), rs.getString("l_name"), rs.getString("email"), displayDate(rs.getString("dob")), rs.getString("phno"), rs.getString("course_name"), rs.getBigDecimal("cgpa"));
             System.out.println();
         }
         else
@@ -522,14 +529,14 @@ public class StudentRecordSystem
         clrscr();
         System.out.println("Enter registration no.: ");
         reg_no = Integer.parseInt(br.readLine());
-        query = "SELECT S.F_NAME, S.L_NAME, S.S_YEAR, S.SECTION, S.ROLL_NO, S.EMAIL, S.DOB, S.PHNO, C.COURSE_NAME, G.CGPA FROM STUDENTS S INNER JOIN ENROLLS E ON S.REG_NO=E.REG_NO INNER JOIN COURSES C ON E.COURSE_ID=C.COURSE_ID INNER JOIN GRADES G ON S.REG_NO=G.REG_NO WHERE S.REG_NO="+reg_no;
+        query = "SELECT s.f_name, s.l_name, s.s_year, s.section, s.roll_no, s.email, s.dob, s.phno, c.course_name, g.cgpa FROM students s INNER JOIN enrolls e ON s.reg_no=e.reg_no INNER JOIN courses c ON e.course_id=c.course_id INNER JOIN grades g ON s.reg_no=g.reg_no WHERE s.reg_no="+reg_no;
         rs = st.executeQuery(query);
         if(rs.next())
         {
             ResultSetMetaData rsm = rs.getMetaData();   //For printing the column names
             System.out.printf("\n%-10s%-10s%-10s%-10s%-10s%-30s%-20s%-15s%-15s%-10s", rsm.getColumnName(1), rsm.getColumnName(2), rsm.getColumnName(3), rsm.getColumnName(4), rsm.getColumnName(5), rsm.getColumnName(6), rsm.getColumnName(7), rsm.getColumnName(8), rsm.getColumnName(9), rsm.getColumnName(10));
             System.out.println();
-            System.out.printf("%-10s%-10s%-10d%-10s%-10d%-30s%-20s%-15s%-15s%-10s", rs.getString("F_NAME"), rs.getString("L_NAME"), rs.getInt("S_YEAR"), rs.getString("SECTION"), rs.getInt("ROLL_NO"), rs.getString("EMAIL"), displayDate(rs.getString("DOB")), rs.getString("PHNO"), rs.getString("COURSE_NAME"), rs.getBigDecimal("CGPA"));
+            System.out.printf("%-10s%-10s%-10d%-10s%-10d%-30s%-20s%-15s%-15s%-10s", rs.getString("f_name"), rs.getString("l_name"), rs.getInt("s_year"), rs.getString("section"), rs.getInt("roll_no"), rs.getString("email"), displayDate(rs.getString("dob")), rs.getString("phno"), rs.getString("course_name"), rs.getBigDecimal("cgpa"));
             System.out.println();
         }
         else
@@ -544,7 +551,7 @@ public class StudentRecordSystem
         clrscr();
         System.out.println("Enter year: ");
         year = Integer.parseInt(br.readLine());
-        query = "SELECT S.REG_NO, S.F_NAME, S.L_NAME, S.SECTION, S.ROLL_NO, S.EMAIL, S.DOB, S.PHNO, C.COURSE_NAME, G.CGPA FROM STUDENTS S INNER JOIN ENROLLS E ON S.REG_NO=E.REG_NO INNER JOIN COURSES C ON E.COURSE_ID=C.COURSE_ID INNER JOIN GRADES G ON S.REG_NO=G.REG_NO WHERE S_YEAR="+year;
+        query = "SELECT s.reg_no, s.f_name, s.l_name, s.section, s.roll_no, s.email, s.dob, s.phno, c.course_name, g.cgpa FROM students s INNER JOIN enrolls e ON s.reg_no=e.reg_no INNER JOIN courses c ON e.course_id=c.course_id INNER JOIN grades g ON s.reg_no=g.reg_no WHERE s_year="+year;
         rs = st.executeQuery(query);
         ResultSetMetaData rsm = rs.getMetaData();   //For printing the column names
         System.out.printf("\n%-10s%-10s%-10s%-10s%-10s%-30s%-20s%-15s%-15s%-10s", rsm.getColumnName(1), rsm.getColumnName(2), rsm.getColumnName(3), rsm.getColumnName(4), rsm.getColumnName(5), rsm.getColumnName(6), rsm.getColumnName(7), rsm.getColumnName(8), rsm.getColumnName(9), rsm.getColumnName(10));
@@ -554,7 +561,7 @@ public class StudentRecordSystem
         {
             if(rs.next())
             {
-                System.out.printf("%-10d%-10s%-10s%-10s%-10d%-30s%-20s%-15s%-15s%-10s", rs.getInt("REG_NO"), rs.getString("F_NAME"), rs.getString("L_NAME"), rs.getString("SECTION"), rs.getInt("ROLL_NO"), rs.getString("EMAIL"), displayDate(rs.getString("DOB")), rs.getString("PHNO"), rs.getString("COURSE_NAME"), rs.getBigDecimal("CGPA"));
+                System.out.printf("%-10d%-10s%-10s%-10s%-10d%-30s%-20s%-15s%-15s%-10s", rs.getInt("reg_no"), rs.getString("f_name"), rs.getString("l_name"), rs.getString("section"), rs.getInt("roll_no"), rs.getString("email"), displayDate(rs.getString("dob")), rs.getString("phno"), rs.getString("course_name"), rs.getBigDecimal("cgpa"));
                 System.out.println();
                 count++;
             }
@@ -575,7 +582,7 @@ public class StudentRecordSystem
         clrscr();
         System.out.println("Enter course name: ");
         course_name = br.readLine().toUpperCase();
-        query = "SELECT S.REG_NO, S.F_NAME, S.L_NAME, S.S_YEAR, S.SECTION, S.ROLL_NO, S.EMAIL, S.DOB, S.PHNO, G.CGPA FROM STUDENTS S INNER JOIN ENROLLS E ON S.REG_NO=E.REG_NO INNER JOIN COURSES C ON E.COURSE_ID=C.COURSE_ID INNER JOIN GRADES G ON S.REG_NO=G.REG_NO WHERE COURSE_NAME='"+course_name+"'";
+        query = "SELECT s.reg_no, s.f_name, s.l_name, s.s_year, s.section, s.roll_no, s.email, s.dob, s.phno, g.cgpa FROM students s INNER JOIN enrolls e ON s.reg_no=e.reg_no INNER JOIN courses c ON e.course_id=c.course_id INNER JOIN grades g ON s.reg_no=g.reg_no WHERE course_name='"+course_name+"'";
         rs = st.executeQuery(query);
         ResultSetMetaData rsm = rs.getMetaData();
         System.out.printf("\n%-10s%-10s%-10s%-10s%-10s%-10s%-30s%-20s%-15s%-15s", rsm.getColumnName(1), rsm.getColumnName(2), rsm.getColumnName(3), rsm.getColumnName(4), rsm.getColumnName(5), rsm.getColumnName(6), rsm.getColumnName(7), rsm.getColumnName(8), rsm.getColumnName(9), rsm.getColumnName(10));
@@ -585,7 +592,7 @@ public class StudentRecordSystem
         {
             if(rs.next())
             {
-                System.out.printf("%-10d%-10s%-10s%-10d%-10s%-10d%-30s%-20s%-15s%-15s", rs.getInt("REG_NO"), rs.getString("F_NAME"), rs.getString("L_NAME"), rs.getInt("S_YEAR"), rs.getString("SECTION"), rs.getInt("ROLL_NO"), rs.getString("EMAIL"), displayDate(rs.getString("DOB")), rs.getString("PHNO"), rs.getString("CGPA"));
+                System.out.printf("%-10d%-10s%-10s%-10d%-10s%-10d%-30s%-20s%-15s%-15s", rs.getInt("reg_no"), rs.getString("f_name"), rs.getString("l_name"), rs.getInt("s_year"), rs.getString("section"), rs.getInt("roll_no"), rs.getString("email"), displayDate(rs.getString("dob")), rs.getString("phno"), rs.getString("cgpa"));
                 System.out.println();
                 count++;
             }
@@ -600,36 +607,36 @@ public class StudentRecordSystem
         }
     }
 
-    //Higher than a specific CGPA
+    //Higher than a specific cgpa
     public void userMenu7()throws Exception
     {
         clrscr();
-        System.out.println("Enter a CGPA:");
+        System.out.println("Enter a cgpa:");
         cgpa = Double.parseDouble(br.readLine());
-        query = "SELECT S.REG_NO, S.F_NAME, S.L_NAME, S.S_YEAR, S.SECTION, S.ROLL_NO, S.EMAIL, S.DOB, S.PHNO, C.COURSE_NAME FROM STUDENTS S INNER JOIN ENROLLS E ON S.REG_NO=E.REG_NO INNER JOIN COURSES C ON E.COURSE_ID=C.COURSE_ID INNER JOIN GRADES G ON S.REG_NO=G.REG_NO WHERE G.CGPA > "+cgpa;
+        query = "SELECT s.reg_no, s.f_name, s.l_name, s.s_year, s.section, s.roll_no, s.email, s.dob, s.phno, c.course_name FROM students s INNER JOIN enrolls e ON s.reg_no=e.reg_no INNER JOIN courses c ON e.course_id=c.course_id INNER JOIN grades g ON s.reg_no=g.reg_no WHERE g.cgpa > "+cgpa;
         rs = st.executeQuery(query);
         ResultSetMetaData rsm = rs.getMetaData();
         System.out.printf("\n%-10s%-10s%-10s%-10s%-10s%-10s%-30s%-20s%-15s%-15s", rsm.getColumnName(1), rsm.getColumnName(2), rsm.getColumnName(3), rsm.getColumnName(4), rsm.getColumnName(5), rsm.getColumnName(6), rsm.getColumnName(7), rsm.getColumnName(8), rsm.getColumnName(9), rsm.getColumnName(10));
         System.out.println();
         while(rs.next())
         {
-            System.out.printf("%-10d%-10s%-10s%-10d%-10s%-10d%-30s%-20s%-15s%-15s", rs.getInt("REG_NO"), rs.getString("F_NAME"), rs.getString("L_NAME"), rs.getInt("S_YEAR"), rs.getString("SECTION"), rs.getInt("ROLL_NO"), rs.getString("EMAIL"), displayDate(rs.getString("DOB")), rs.getString("PHNO"), rs.getString("COURSE_NAME"));
+            System.out.printf("%-10d%-10s%-10s%-10d%-10s%-10d%-30s%-20s%-15s%-15s", rs.getInt("reg_no"), rs.getString("f_name"), rs.getString("l_name"), rs.getInt("s_year"), rs.getString("section"), rs.getInt("roll_no"), rs.getString("email"), displayDate(rs.getString("dob")), rs.getString("phno"), rs.getString("course_name"));
             System.out.println();
         }
     }
 
-    //Display highest CGPA in respective course and year
+    //Display highest cgpa in respective course and year
     public void userMenu8()throws Exception
     {
         clrscr();
-        query = "SELECT S.S_YEAR, C.COURSE_NAME, MAX(G.CGPA) AS CGPA FROM STUDENTS S, ENROLLS E, COURSES C, GRADES G WHERE S.REG_NO=E.REG_NO AND C.COURSE_ID=E.COURSE_ID AND S.REG_NO=G.REG_NO GROUP BY C.COURSE_NAME, S.S_YEAR ORDER BY S_YEAR, COURSE_NAME";
+        query = "SELECT s.s_year, c.course_name, MAX(g.cgpa) AS cgpa FROM students s, enrolls e, courses c, grades g WHERE s.reg_no=e.reg_no AND c.course_id=e.course_id AND s.reg_no=g.reg_no GROUP BY c.course_name, s.s_year ORDER BY s_year, course_name";
         rs = st.executeQuery(query);
         ResultSetMetaData rsm = rs.getMetaData();
         System.out.printf("\n%-10s%-20s%-10s", rsm.getColumnName(1), rsm.getColumnName(2), rsm.getColumnName(3));
         System.out.println();
         while(rs.next())
         {
-            System.out.printf("%-10d%-20s%-10s", rs.getInt("S_YEAR"), rs.getString("COURSE_NAME"), rs.getBigDecimal("CGPA"));
+            System.out.printf("%-10d%-20s%-10s", rs.getInt("s_year"), rs.getString("course_name"), rs.getBigDecimal("cgpa"));
             System.out.println();
         }
     }
@@ -647,8 +654,8 @@ public class StudentRecordSystem
             System.out.println("4. Search student by registration number");
             System.out.println("5. Search students studying in a specific year");
             System.out.println("6. Search students studying a specific course");
-            System.out.println("7. Search students having CGPA higher than given");
-            System.out.println("8. Display highest CGPA in respective course and year");
+            System.out.println("7. Search students having cgpa higher than given");
+            System.out.println("8. Display highest cgpa in respective course and year");
             System.out.println("9. Exit");
             System.out.println("\nEnter your choice: ");
             choice = Integer.parseInt(br.readLine());
